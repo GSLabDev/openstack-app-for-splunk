@@ -17,12 +17,9 @@ Openstack App for Splunk is licensed under the Open Source License.
 
 Client Application
 
-OTPManager will act as Authenticator server whereas Google Authenticator application (available for iOS, Android, BlackBerry and Windows ) as a client to generates OTP code.
+Openstack App for Splunk works together with Openstack Add-on for Splunk to monitor Openstack Newton services and log files. It provides a great visibiliy into you Openstack cloud setup.
 
-Library Documentation
 
-This library includes full JavaDoc documentation and an example code to understand implementation of OTPManager library in a better way.
-Usage
 Requirements ( build dependencies )
 
 * Python 2.7
