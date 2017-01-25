@@ -1,0 +1,8 @@
+<nav color="#205081">
+    <view name="default" default="true"/>
+    <a href="/dj/openstack_app/home">Home</a>
+	<a href="/dj/openstack_app/controller">Controller</a>
+	<a href="/dj/openstack_app/compute">Compute</a>
+	<a href="/dj/openstack_app/cinder">Cinder</a>
+  	<a href="/dj/openstack_app/search">Search</a>
+</nav>

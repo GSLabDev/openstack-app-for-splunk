@@ -1,0 +1,648 @@
+<!--
+
+Openstack App for Splunk 
+
+Copyright (c) 2017, Great Software Laboratory Private Limited.
+All rights reserved.
+
+Contributor: Vikas Sanap [vikas.sanap@gslab.com], Basant Kumar [basant.kumar@gslab.com]
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the "Great Software Laboratory Private Limited" nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+-->
+
+
+{# Boilerplate for a Django Bindings template #}
+{% extends "splunkdj:base_with_app_bar.html" %}
+{% load splunkmvc %}
+{% block title %}Cinder Setup{% endblock title %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}{{app_name}}/custom.css" />
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}splunkjs/css/dashboard.css" />
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}{{app_name}}/table_decorations.css" />
+<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Play:700,400' type='text/css'>
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}{{app_name}}/table.css" />
+<link rel="shortcut icon" href="/en-US/static/@0E22169D3B3FB1750D1147F8BD773C60E9CC26636C867A8DC9886F3E8A17DDC6/img/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="{{SPLUNKWEB_URL_PREFIX}}/static/build/css/bootstrap-enterprise.css" />
+<link rel="stylesheet" type="text/css" href="{{SPLUNKWEB_URL_PREFIX}}/static/css/build/pages/dashboard-simple-bootstrap.min.css" />
+{% endblock css %}
+{% header id="app-header" appbar=0 %}
+{% block content %}
+<div class="dashboard-body container-fluid main-section-body">
+    <div class="dashboard-row">
+        <div class="dashboard-header">
+            <h2 style='color: rgb(2, 2, 2);'>Cinder Setup</h2>
+        </div>
+    </div>
+
+    <div class="dashboard-row">
+        <div class="dashboard-cell" style="width: 100%;">
+            <div class="dashboard-panel">
+                <div class="panel-head" style='text-align: center; background-color: #3b73af; display: block;'>
+                    <h3 style='color:white;'>Volumes</h3>
+                </div>
+
+                <div class="panel-body" style="max-height:216px;min-height:216px;overflow:auto;">
+                        <div id="volumes_table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-row">
+        <div class="dashboard-cell" style="width: 21%;">
+            <div class="dashboard-panel">
+                <div class="panel-head" style='text-align: center; background-color: #3b73af; display: block;'>
+                    <h3 style='color:white;'>Select Node</h3>
+                </div>
+
+                <div class="panel-body" style='height:160px'>
+                    <center>
+                        <h5>OpenStack Deployment</h5>
+                        <div id="cinder_openstack_select_dropdown"></div>
+                        </hr>
+                        <h5>Cinder Node</h5>
+                        </br>
+                        <div id="cinder_node_select_dropdown"></div>
+                    </center>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-cell" style="width: 25%">
+            <div class="dashboard-panel">
+                <div class="panel-head" style='text-align: center; background-color: #3b73af; display: block;'>
+                    <h3 style='color:white;'>Service Monitoring Details</h3>
+                </div>
+
+                <div class="panel-body" style='height:160px'>
+                    <div id="cinder_table_custom_service_status_table"></div>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-cell" style="width: 17%;">
+            <div class="dashboard-panel">
+                <div class="panel-head" style='text-align: center; background-color: #3b73af; display: block;'>
+                    <h3 style='color:white;'>Load Details</h3>
+                </div>
+
+                <div class="panel-body" style='height:160px'>
+                    <div id="user_session_details_table"></div>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-cell" style="width: 12.33%;">
+            <div class="dashboard-panel">
+                <div class="panel-head" style='text-align: center; background-color: #3b73af; display: block;'>
+                    <h3 style='color:white;'>% RAM Usage</h3>
+                </div>
+
+                <div class="panel-body" style='height:145px;margin-top:10%;'>
+                    <div id="cinder_ram_usage_gauge"></div>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-cell" style="width: 12.33%;">
+            <div class="dashboard-panel">
+                <div class="panel-head" style='text-align: center; background-color: #3b73af; display: block;'>
+                    <h3 style='color:white;'>% CPU Usage</h3>
+                </div>
+
+                <div class="panel-body" style='height:145px;margin-top:10%;'>
+                    <div id="cinder_cpu_usage_gauge"></div>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-cell" style="width: 12.33%;">
+            <div class="dashboard-panel">
+                <div class="panel-head" style='text-align: center; background-color: #3b73af; display: block;'>
+                    <h3 style='color:white;'>% Disk Usage</h3>
+                </div>
+
+                <div class="panel-body" style='height:145px;margin-top:10%;'>
+                    <div id="cinder_disk_usage_gauge"></div>
+                </div>
+            </div>
+        </div>        
+    </div>
+    <div class="dashboard-row">
+        <div class="dashboard-cell" style="width: 21%;">
+            <div class="dashboard-panel">
+                <div class="panel-head" style='text-align: center; background-color: #3b73af; display: block;'>
+                    <h3 style='color:white;'>View Log</h3>
+                </div>
+
+                <div class="panel-body" style='height:160px'>
+                    <center>
+                        <h5>Select Log</h5>
+                        <div id="cinder_log_select_dropdown"></div>
+                        <h5>Select Time Range</h5>
+                        </br>
+                        <div id="cinder_timerangeview"></div>
+                    </center>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-cell" style="width: 79%">
+            <div class="dashboard-panel">
+                <div class="panel-head" style='text-align: center; background-color: #3b73af; display: block;'>
+                    <h3 style='color:white;'>Log</h3>
+                </div>
+                <div class="panel-body" style=''>
+                    <div id="cinder_log_table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content%}
+{% block managers %}
+
+    {% searchmanager
+    id="cinder_machine_service_status_search_manager"
+    search="node::$node$  service_name=* | head 100 | dedup service_name service_status| table service_name service_status | sort service_status desc| rename service_name as \"Name\", service_status as \"Status\""|token_safe
+    earliest_time="rt-15m"
+    latest_time="rt"
+    cache=False %} 
+
+    {% searchmanager
+    id="cinder_log_table_search_manager"
+    search="node::$node$  sourcetype=$sourcetype$| table _raw | rename _raw as \"Log Entry\""|token_safe
+    earliest_time="$earlyval$"|token_safe
+    latest_time="$lateval$"|token_safe
+    cache=False %}  
+
+    {% searchmanager
+    id="cinder_log_select_search_manager"
+    search="node::$node$  AND sourcetype=*_log  | dedup sourcetype | top 2000 sourcetype| fields sourcetype"|token_safe
+    earliest_time="rt-24h@h"
+    latest_time="rt"
+    cache=True %} 
+
+    {% searchmanager
+    id="cinder_openstack_select_search_manager"
+    search="openstack::*|dedup openstack|top 100 openstack | fields openstack"
+    earliest_time="rt-1h"
+    latest_time="rt"
+    cache=True %}
+
+    {% searchmanager
+    id="cinder_node_select_search_manager"
+    search="openstack::$openstack$ AND node::* AND node_type::cinder| dedup node | top 250 node| fields node"|token_safe
+    earliest_time="rt-1h"
+    latest_time="rt"
+    cache=True %}
+
+    {% searchmanager
+    id="volumes_search_manager"
+    search="node::splunk_server source=\"volumes\" |head 1"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}  
+
+{% endblock managers %}
+{% block js %}
+<script src="{{SPLUNKWEB_URL_PREFIX}}/config?autoload=1"></script>
+<script src="{{SPLUNKWEB_URL_PREFIX}}/static/js/i18n.js"></script>
+<script src="{{SPLUNKWEB_URL_PREFIX}}/i18ncatalog?autoload=1"></script>
+<script src="{{SPLUNKWEB_URL_PREFIX}}/static/build/simplexml/index.js"></script>
+
+<script type="text/x-underscore-tmpl" id="user_session_template" style="display:none">
+    <table id="user_session_template_table" class="table table-chrome table-striped not-wrapped-results  table-drilldown table-drilldown-cell">
+        <thead class="shared-resultstable-resultstableheader">
+            <tr class="">
+                <th class="sorts" data-sort-key="Name">Parameter</th>
+                <th class="sorts" data-sort-key="Status">Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <%
+            for(var i=0, l=results.length; i<l; i++) {
+                var line=results[i];
+                for(var key in line) {
+                    var attrName = key;
+                    var attrValue = line[key];
+                %>
+                    <tr class="shared-resultstable-resultstablerow odd">
+                    <td><%= attrName %></td>
+                    <td><%= attrValue %></td>
+                    </tr>
+                <%
+                }
+            }
+            %>
+        </tbody>
+    </table>
+</script>
+
+<script type="text/x-underscore-tmpl" id="volumes_template" style="display:none">
+    <table id="volumes_template_table" class="table table-chrome table-striped not-wrapped-results  table-drilldown table-drilldown-cell">
+        <thead class="shared-resultstable-resultstableheader">
+            <tr class="">
+                <th class="sorts" data-sort-key="Host">Host</th>
+                <th class="sorts" data-sort-key="Name">Name</th>
+                <th class="sorts" data-sort-key="Size">Size</th>
+                <th class="sorts" data-sort-key="Status">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        <%
+            var temp1  = results[0]['_raw'];
+            temp = JSON.parse(temp1);
+            for(var i=0;i < temp['volumes'].length;i++) {
+                %>
+                <tr class="shared-resultstable-resultstablerow odd">
+                    <td><%= temp["volumes"][i]["os-vol-host-attr:host"] %></td>
+                    <td><%= temp["volumes"][i]["volume_image_metadata"]["image_name"] %></td>
+                    <td><%= temp["volumes"][i]["size"] %> GB</td>
+                     <%
+                    if(temp["volumes"][i]["status"] == "available")
+                    {
+                     %>
+                        <td class="icon-inline numeric"><center><%= temp["volumes"][i]["status"] %><i class="icon-check" title="available"></i></center></td>
+                    <% 
+                    }
+                    else if(temp["volumes"][i]["status"] == "in-use")
+                    { %>
+                     <td class="icon-inline numeric"><center><%= temp["volumes"][i]["status"] %><i class="icon-alert" title=<%= temp["volumes"][i]["status"] %>></i></center></td>
+                    <% } else
+                    { %>
+                     <td class="icon-inline numeric"><center><%= temp["volumes"][i]["status"] %><i class="icon-alert-circle" title=<%= temp["volumes"][i]["status"] %>></i></center></td>
+                    <% } %>
+                </tr>
+                <%
+            }
+            %>
+        </tbody>
+    </table>
+</script>
+<script>
+    var deps = [
+    "splunkjs/ready!",
+    "splunkjs/mvc/chartview",
+    "splunkjs/mvc/tableview",
+    "splunkjs/mvc/dropdownview",
+    "splunkjs/mvc/timerangeview",
+    "underscore",
+    "splunkjs/mvc/dataview",
+    "splunkjs/mvc",
+    "splunkjs/mvc/utils",
+    "splunkjs/mvc/tokenutils",
+    "splunkjs/mvc/datatemplateview",
+    "jquery"
+    ];
+    require(deps, function(mvc) {
+        var ChartView = require("splunkjs/mvc/chartview");
+        var TableView = require("splunkjs/mvc/tableview");
+        var DropdownView = require("splunkjs/mvc/dropdownview");
+        var TimeRangeView = require("splunkjs/mvc/timerangeview");
+        var DataView = require("splunkjs/mvc/dataview");
+        var DataTemplateView = require("splunkjs/mvc/datatemplateview");
+        var _ = require("underscore");
+        
+        
+        new DataView({
+            id: "volumes_table_view",
+            managerid: "volumes_search_manager",
+            template: $('#volumes_template').html(),
+            el: $('#volumes_table')
+            }, {tokens: true}).render();
+
+      
+
+        new TableView({
+            id: "cinder_log_table_view",
+            managerid: "cinder_log_table_search_manager",
+            type: "table",
+            pageSize: "10",
+            el: $("#cinder_log_table")
+        }).render();
+
+        new DropdownView({
+            id: "cinder_log_select_dropdown_view",
+            managerid: "cinder_log_select_search_manager",
+            value: mvc.tokenSafe("$sourcetype$"),
+            labelField: "sourcetype",
+            valueField: "sourcetype",
+            selectFirstChoice: "true",
+            el: $("#cinder_log_select_dropdown")
+        }).render();
+
+        new TimeRangeView({
+            id: "cinder_timerangeview_view",
+            preset: "Today",
+            earliest_time: mvc.tokenSafe("$earlyval$"),
+            latest_time: mvc.tokenSafe("$lateval$"),
+            el: $("#cinder_timerangeview")
+        }).render();
+
+        new DropdownView({
+            id: "cinder_openstack_select_dropdown_view",
+            managerid: "cinder_openstack_select_search_manager",
+            value: mvc.tokenSafe("$openstack$"),
+            labelField: "openstack",
+            valueField: "openstack",
+            selectFirstChoice: "true",
+            el: $("#cinder_openstack_select_dropdown")
+        }).render();
+
+        new DropdownView({
+            id: "cinder_node_select_dropdown_view",
+            managerid: "cinder_node_select_search_manager",
+            value: mvc.tokenSafe("$node$"),
+            labelField: "node",
+            valueField: "node",
+            selectFirstChoice: "true",
+            el: $("#cinder_node_select_dropdown")
+        }).render();
+
+        var myCustomTable = new TableView({
+            id: "cinder_table_custom_service_status_view",
+            managerid: "cinder_machine_service_status_search_manager",
+            pageSize: 4,
+            el: $("#cinder_table_custom_service_status_table"),
+            format: {
+                "sparkline": [ 
+                {
+                        "type": "sparkline",
+                        "options": 
+                        {
+                            "type": "bar",
+                            "height": "40px", 
+                            "barWidth": "5px",
+                            "colorMap": 
+                            {
+                                "100:": "#0033CC", 
+                                ":99": "#00FF00"
+                            }
+                        }
+                    }
+                    ]
+                }
+            });
+        var ICONS = {
+            stopped: 'alert-circle',
+            running: 'check-circle'
+        };
+        var CustomIconCellRenderer = TableView.BaseCellRenderer.extend({ 
+            canRender: function(cellData) {
+                return cellData.field === "Status";
+                console.log(cellData.field === "Status")
+            },
+            render: function($td, cellData) {
+                console.log("cellData: ");
+                console.log("cellData: ", cellData);
+
+                var icon = 'question';
+                if(ICONS.hasOwnProperty(cellData.value)) {
+                    icon = ICONS[cellData.value];
+                }
+                $td.addClass('icon').html(_.template('<%- Status %> <i class="icon-<%-icon%> <%- Status %>" title="<%- Status %>"></i>', {
+                    icon: icon,
+                    Status: cellData.value
+                }));
+            }
+        });
+        var myCellRenderer = new CustomIconCellRenderer();
+        myCustomTable.addCellRenderer(myCellRenderer); 
+        myCustomTable.render();
+});
+</script>
+
+
+<script type="text/javascript">
+
+
+require([
+    "splunkjs/mvc",
+    "splunkjs/mvc/utils",
+    "splunkjs/mvc/tokenutils",
+    "underscore",
+    "jquery",
+    "splunkjs/mvc/simplexml",
+    "splunkjs/mvc/layoutview",
+    "splunkjs/mvc/simplexml/dashboardview",
+    "splunkjs/mvc/simplexml/dashboard/panelref",
+    "splunkjs/mvc/simplexml/element/chart",
+    "splunkjs/mvc/simplexml/element/event",
+    "splunkjs/mvc/simplexml/element/html",
+    "splunkjs/mvc/simplexml/element/list",
+    "splunkjs/mvc/simplexml/element/map",
+    "splunkjs/mvc/simplexml/element/single",
+    "splunkjs/mvc/simplexml/element/table",
+    "splunkjs/mvc/simplexml/element/visualization",
+    "splunkjs/mvc/simpleform/formutils",
+    "splunkjs/mvc/simplexml/eventhandler",
+    "splunkjs/mvc/simplexml/searcheventhandler",
+    "splunkjs/mvc/simpleform/input/dropdown",
+    "splunkjs/mvc/simpleform/input/radiogroup",
+    "splunkjs/mvc/simpleform/input/linklist",
+    "splunkjs/mvc/simpleform/input/multiselect",
+    "splunkjs/mvc/simpleform/input/checkboxgroup",
+    "splunkjs/mvc/simpleform/input/text",
+    "splunkjs/mvc/simpleform/input/timerange",
+    "splunkjs/mvc/simpleform/input/submit",
+    "splunkjs/mvc/searchmanager",
+    "splunkjs/mvc/savedsearchmanager",
+    "splunkjs/mvc/postprocessmanager",
+    "splunkjs/mvc/simplexml/urltokenmodel",
+    "splunkjs/mvc/dataview"
+   
+    ],
+    function(
+        mvc,
+        utils,
+        TokenUtils,
+        _,
+        $,
+        DashboardController,
+        LayoutView,
+        Dashboard,
+        PanelRef,
+        ChartElement,
+        EventElement,
+        HtmlElement,
+        ListElement,
+        MapElement,
+        SingleElement,
+        TableElement,
+        VisualizationElement,
+        FormUtils,
+        EventHandler,
+        SearchEventHandler,
+        DropdownInput,
+        RadioGroupInput,
+        LinkListInput,
+        MultiSelectInput,
+        CheckboxGroupInput,
+        TextInput,
+        TimeRangeInput,
+        SubmitButton,
+        SearchManager,
+        SavedSearchManager,
+        PostProcessManager,
+        UrlTokenModel,
+	DataView
+
+       
+        ) {
+
+        var pageLoading = true;
+
+
+        var urlTokenModel = new UrlTokenModel();
+        mvc.Components.registerInstance('url', urlTokenModel);
+        var defaultTokenModel = mvc.Components.getInstance('default', {create: true});
+        var submittedTokenModel = mvc.Components.getInstance('submitted', {create: true});
+
+
+	new SearchManager({
+            "id": "system_status_search_manager",
+            "sample_ratio": null,
+            "status_buckets": 0,
+            "earliest_time": "rt-5m",
+            "search": "node::newton_cinder_node source=system_status|head 1|fields *",
+            "cancelOnUnload": true,
+            "latest_time": "rt",
+            "app": utils.getCurrentApp(),
+            "auto_cancel": 90,
+            "preview": true,
+            "runWhenTimeIsUndefined": false
+        }, {tokens: true});
+
+
+         new PostProcessManager({
+            "id": "cinder_ram_usage_search_manager",
+	    "managerid": "system_status_search_manager",
+            "sample_ratio": null,
+            "status_buckets": 0,
+            "earliest_time": "rt-5m",
+            "search": "|search used_ram_perc|fields used_ram_perc | table used_ram_perc",
+            "cancelOnUnload": true,
+            "latest_time": "rt",
+            "app": utils.getCurrentApp(),
+            "auto_cancel": 90,
+            "preview": true,
+            "runWhenTimeIsUndefined": false
+        }, {tokens: true});
+
+
+
+	new PostProcessManager({
+            "id": "cinder_cpu_usage_search_manager",
+	    "managerid": "system_status_search_manager",
+            "sample_ratio": null,
+            "status_buckets": 0,
+            "earliest_time": "rt-5m",
+            "search": "|search used_cpu|fields used_cpu",
+            "cancelOnUnload": true,
+            "latest_time": "rt",
+            "app": utils.getCurrentApp(),
+            "auto_cancel": 90,
+            "preview": true,
+            "runWhenTimeIsUndefined": false
+        }, {tokens: true});
+
+	new PostProcessManager({
+            "id": "cinder_disk_usage_search_manager",
+	    "managerid": "system_status_search_manager",
+            "sample_ratio": null,
+            "status_buckets": 0,
+            "earliest_time": "rt-5m",
+            "search": "|search used_disk_perc|fields used_disk_perc",
+            "cancelOnUnload": true,
+            "latest_time": "rt",
+            "app": utils.getCurrentApp(),
+            "auto_cancel": 90,
+            "preview": true,
+            "runWhenTimeIsUndefined": false
+        }, {tokens: true});
+
+       
+
+	  new PostProcessManager({
+            "id": "machine_load_search_manager",
+	    "managerid": "system_status_search_manager",
+            "sample_ratio": null,
+            "status_buckets": 0,
+            "earliest_time": "rt-5m",
+            "search": "|search uptime users load0 load1 load2|table uptime users load0 load1 load2",
+            "cancelOnUnload": true,
+            "latest_time": "rt",
+            "app": utils.getCurrentApp(),
+            "auto_cancel": 90,
+            "preview": true,
+            "runWhenTimeIsUndefined": false
+        }, {tokens: true});
+
+
+
+        new ChartElement({
+            "id": "cinder_ram_usage_gauge_view",
+            "resizable": true,
+            "charting.chart": "radialGauge",
+            "managerid": "cinder_ram_usage_search_manager",
+	    "charting.chart.style":"minimal",
+            "el": $('#cinder_ram_usage_gauge')
+        }, {tokens: true}).render();
+
+
+	 new ChartElement({
+            "id": "cinder_cpu_usage_gauge_view",
+            "resizable": true,
+            "charting.chart": "radialGauge",
+            "managerid": "cinder_cpu_usage_search_manager",
+	    "charting.chart.style":"minimal",
+            "el": $('#cinder_cpu_usage_gauge')
+        }, {tokens: true}).render();
+
+ 	new ChartElement({
+            "id": "cinder_disk_usage_gauge_view",
+            "resizable": true,
+            "charting.chart": "radialGauge",
+            "managerid": "cinder_disk_usage_search_manager",
+	    "charting.chart.style":"minimal",
+            "el": $('#cinder_disk_usage_gauge')
+        }, {tokens: true}).render();
+
+
+	new DataView({
+        "id": "cinder_user_session_data_view",
+        "managerid": "machine_load_search_manager",
+        "template": $('#user_session_template').html(),
+        "el": $('#user_session_details_table')
+        }, {tokens: true}).render();
+
+
+        DashboardController.ready();
+        pageLoading = false;
+
+    }
+);
+// ]]>
+</script>
+
+
+{# JavaScript goes here #}
+{% endblock js %}

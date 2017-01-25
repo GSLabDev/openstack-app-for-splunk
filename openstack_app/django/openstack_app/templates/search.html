@@ -1,0 +1,99 @@
+<!--
+
+Openstack App for Splunk 
+
+Copyright (c) 2017, Great Software Laboratory Private Limited.
+All rights reserved.
+
+Contributor: Vikas Sanap [vikas.sanap@gslab.com], Basant Kumar [basant.kumar@gslab.com]
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the "Great Software Laboratory Private Limited" nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+-->
+
+
+{% extends "splunkdj:base_with_app_bar.html" %}
+
+{% load splunkmvc %}
+{% block title %}Search Logs{% endblock title %}
+
+{% block title %}{% endblock title %}
+
+{% block css %}
+    <style>
+        .main-area {
+            padding: 30px;
+        }
+    </style>
+{% endblock css %}
+
+{% block content %}
+<div>
+    <div class="main-area">
+        <p></p>
+    </div>
+    {% searchbar id="searchbar1" managerid="search1" %}
+    {% searchcontrols id="searchcontrols1" managerid="search1" %}
+    {% timeline id="timeline1" managerid="search1" %}
+    {% table id="table1" managerid="search1" %}
+</div>
+{% endblock content %}
+
+{% block managers %}
+    {% searchmanager id="search1" 
+        search="openstack::* | head 100"
+        preview=True 
+        required_field_list="*" status_buckets=300
+    %}
+{% endblock managers %}
+
+{% block js %}
+<script>
+    var deps = [
+        "splunkjs/ready!"
+    ];
+    require(deps, function(mvc) {
+        var mytimeline = splunkjs.mvc.Components.getInstance("timeline1");
+        var mysearchbar = splunkjs.mvc.Components.getInstance("searchbar1");
+        var mysearch = splunkjs.mvc.Components.getInstance("search1");
+
+
+        mytimeline.on("change", function() {
+            mysearch.settings.set(mytimeline.val());
+        });
+
+
+        mysearchbar.on("change", function() {
+            mysearch.settings.unset("search");
+            mysearch.settings.set("search", mysearchbar.val());
+        });
+
+
+        mysearchbar.timerange.on("change", function() {
+            mysearch.settings.set(mysearchbar.timerange.val()); 
+        });
+    });
+</script>
+{% endblock js %}

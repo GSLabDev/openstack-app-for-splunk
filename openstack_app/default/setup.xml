@@ -1,0 +1,25 @@
+<setup>
+  <block title="Configure This App">
+    <text>Enter admin account details to fetch OpenStack Newton cloud setup information.</text>
+  </block>
+  <block title="Add new credentials" endpoint="storage/passwords" entity="_new">
+      <input field="name">
+        <label>Username</label>
+        <type>text</type>
+      </input>
+      <input field="password">
+        <label>Password</label>
+        <type>password</type>
+      </input>
+  </block>
+  <block title="" endpoint="mycustom/customendpoint" entity="userinfo">
+      <input field="tenant">
+        <label>Enter Openstack Admin domain</label>
+        <type>text</type>
+      </input>
+      <input field="baseurl">
+        <label>Enter Openstack base url</label>
+        <type>text</type>
+      </input>
+  </block>
+</setup>

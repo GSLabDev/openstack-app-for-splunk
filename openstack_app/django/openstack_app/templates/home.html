@@ -1,0 +1,860 @@
+<!--
+
+Openstack App for Splunk 
+
+Copyright (c) 2017, Great Software Laboratory Private Limited.
+All rights reserved.
+
+Contributor: Vikas Sanap [vikas.sanap@gslab.com], Basant Kumar [basant.kumar@gslab.com]
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the "Great Software Laboratory Private Limited" nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+-->
+
+
+{# Boilerplate for a Django Bindings template #}
+{% extends "splunkdj:base_with_app_bar.html" %}
+
+{% load splunkmvc %}
+
+{% block title %}Splunk App for Openstack Kilo{% endblock title %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}{{app_name}}/table_data_bar.css" />
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}{{app_name}}/custom.css" />
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}splunkjs/css/dashboard.css" />
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}{{app_name}}/single_decorations.css" />
+    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Play:700,400' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}{{app_name}}/table_decorations.css" />
+    <link rel="shortcut icon" href="/en-US/static/@0E22169D3B3FB1750D1147F8BD773C60E9CC26636C867A8DC9886F3E8A17DDC6/img/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="{{SPLUNKWEB_URL_PREFIX}}/static/build/css/bootstrap-enterprise.css" />
+    <link rel="stylesheet" type="text/css" href="{{SPLUNKWEB_URL_PREFIX}}/static/css/build/pages/dashboard-simple-bootstrap.min.css" />
+    
+{% endblock css %}
+{% header id="app-header" appbar=0 %}
+{% block content %}
+<div class="dashboard-body container-fluid main-section-body" style="color:#333">
+    <div class="dashboard-row">
+        <div class="dashboard-header">
+            <h2 style='color: rgb(2, 2, 2);'>OpenStack Setup Health</h2>
+        </div>
+    </div>
+
+    <div class="dashboard-row">
+        <div class="dashboard-cell" style="width:25%">
+            <h3 style='color:rgb(2,2,2)'>Cluster Health</h3>
+        </div>
+        <div class="dashboard-cell" style="width:37.50%">
+            <h3 style='color:rgb(2,2,2)'>Networking</h3>
+        </div>
+        <div class="dashboard-cell" style="width:37.50%">
+            <h3 style='color:rgb(2,2,2)'>Compute Services</h3>
+        </div>
+    </div>
+
+    <div class="dashboard-row">
+        <div class="dashboard-cell" style="width:25%">
+            <div class="dashboard-row">
+                <div class="dashboard-cell" style="width:100%">
+                    <div class="dashboard-panel">
+                        <div class="panel-head" style="text-align: center">
+                            <h3>Load Stats</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            <div id="node_load_table" style="min-height: 243px;">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="dashboard-cell" style="width:100%;">
+                    <div class="dashboard-panel">
+                        <div class="panel-body">
+                            <div id="node_wise_failed_service_count_single_view">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-cell" style="width:100%">
+                    <div class="dashboard-panel">
+                        <div class="panel-head" style="text-align: center">
+                            <h3>API Services</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            <div id="openstack_services_table">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-cell" style="width:37.50%">
+            <div class="dashboard-row">
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-row">
+                        <div class="dashboard-cell" style="width:100%">
+                            <div class="dashboard-panel">
+                                <div class="panel-body">
+                                    <div id="neutron_agents_stopped_single_view"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-row">
+                        <div class="dashboard-cell" style="width:100%">
+                            <div class="dashboard-panel">
+                                <div class="panel-body">
+                                    <div id="neutron_agents_running_single_view"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-panel">
+                        <div class="panel-head" style="text-align: center">
+                            <h3>Failed Neutron Agents</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            <div id="failed_neutron_agents_table" style="min-height: 193px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-row">
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-row">
+                        <div class="dashboard-cell" style="width:100%">
+                            <div class="dashboard-panel">
+                                <div class="panel-body single-value.none">
+                                    <div id="routers_stopped_single_view" style="height: 90px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-row">
+                        <div class="dashboard-cell" style="width:100%">
+                            <div class="dashboard-panel">
+                                <div class="panel-body">
+                                    <div id="routers_running_single_view" style="height: 90px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-panel">
+                        <div class="panel-head" style="text-align: center">
+                            <h3>Failed Routers</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            <div id="failed_routers_table" style="min-height: 142px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-row">
+                <div class="dashboard-cell" style="width:100%">
+                    <div class="dashboard-row">
+                        <div class="dashboard-cell" style="width:100%">
+                            <div class="dashboard-panel">
+                                <div class="panel-body">
+                                    <div id="networks_configured_single_view"></div>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-cell" style="width:37.50%">
+            <div class="dashboard-row">
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-row">
+                        <div class="dashboard-cell" style="width:100%">
+                            <div class="dashboard-panel">
+                                <div class="panel-body">
+                                    <div id="hypervisors_down_single_view">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-row">
+                        <div class="dashboard-cell" style="width:100%">
+                            <div class="dashboard-panel">
+                                <div class="panel-body">
+                                    <div id="hypervisors_up_single_view">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-panel">
+                        <div class="panel-head" style="text-align: center">
+                            <h3>Failed Hypervisors</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            <div id="failed_compute_node_table" style="min-height: 193px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-row">
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-panel">
+                        <div class="panel-head" style="text-align: center">
+                            <h3>VMs</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div id="vm_state_pie_chart" style="height=146px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-panel">
+                        <div class="panel-head" style="text-align: center">
+                            <h3>Volumes Size</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div id="volume_state_pie_chart" style="height=146px">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-row">
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-row">
+                        <div class="dashboard-cell" style="width:100%">
+                            <div class="dashboard-panel">
+                                <div class="panel-body">
+                                    <div id="images_available_single_view"  style="height=146px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-cell" style="width:50%">
+                    <div class="dashboard-row">
+                        <div class="dashboard-cell" style="width:100%">
+                            <div class="dashboard-panel">
+                                <div class="panel-body">
+                                    <div id="flavors_available_single_view"  style="height=146px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content%}
+{% block managers %}
+
+    {% searchmanager
+    id="nodes_load_search_manager"
+    search="openstack::* node::* source=system_status |dedup node|table node load2|sort by load2 desc|rename node as \"Host\", load2 as \"Load\""
+    earliest_time="rt-15m"
+    latest_time="rt"
+    cache=True %}
+
+    {% searchmanager
+    id="neutron_agents_running_search_manager"
+    search="source=agent_stats|head 1| fields running_neutron_agents_count failed_neutron_agents_count|rangemap field=running_neutron_agents_count low=1-599 severe=0-0|rename range as running | rangemap field=failed_neutron_agents_count low=0-0 severe=1-599|rename range as stopped"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="networks_configured_search_manager"
+    search="source=networks_stats|head 1| fields networks_count|rangemap field=networks_count guarded=1-599 severe=0-0"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="routers_running_search_manager"
+    search="source=routers_stats|head 1| fields running_routers_count stopped_routers_count|rangemap field=running_routers_count low=1-599 severe=0-0|rename range as running|rangemap field=stopped_routers_count low=0-0 severe=1-599|rename range as stopped"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="hypervisors_down_search_manager"
+    search="source=hypervisors_stats|head 1| fields down_hypervisors_count up_hypervisors_count|rangemap field=down_hypervisors_count low=0-0 severe=1-599|rename range as down|rangemap field=up_hypervisors_count severe=0-0 low=1-599|rename range as up"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="vms_state_search_manager"
+    search="source=\"instances_stats\" | head 1|table error_vm_count,running_vm_count,shutoff_vm_count |rename error_vm_count as \"Error\" running_vm_count as \"Running\" shutoff_vm_count as \"Shutoff\"| transpose"
+    earliest_time="rt-2m"
+    latest_time="rt"
+	cache=False
+    %}
+
+    {% searchmanager
+    id="flavors_available_search_manager"
+    search="source=flavors_stats|head 1| fields available_flavor_count|rangemap field=available_flavor_count severe=0-0 guarded=1-599"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="images_available_search_manager"
+    search="source=images_stats|head 1| fields available_images_count|rangemap field=available_images_count severe=0-0 guarded=1-599"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="volume_state_search_manager"
+    search="source=volumes_stats|head 1| table inuse_volume_size available_volume_size|rename available_volume_size as \"Available\" inuse_volume_size as \"In-Use\" |transpose"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="openstack_services_search_manager"
+    search="node::splunk_server source=\"services\"|head 1"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="failed_services_search_manager"
+    search="node::* service_status=stopped |stats count | rangemap field=count low=0-0 severe=1-599"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="failed_routers_search_manager"
+    search="source=routers |head 1"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="neutron_agents_search_manager"
+    search="node::splunk_server source=\"neutron-agent\"|head 1|table _raw"
+    earliest_time="rt-5m"
+    latest_time="rt"
+    cache=False %}
+
+    {% searchmanager
+    id="hypervisor_search_manager"
+    search="node::splunk_server source=\"hypervisors\" |head 1"
+    earliest_time="rt-2m"
+    latest_time="rt"
+    cache=False %} 
+
+{% endblock managers %}
+{% block js %}
+<script src="{{SPLUNKWEB_URL_PREFIX}}/config?autoload=1"></script>
+<script src="{{SPLUNKWEB_URL_PREFIX}}/static/js/i18n.js"></script>
+<script src="{{SPLUNKWEB_URL_PREFIX}}/i18ncatalog?autoload=1"></script>
+<script src="{{SPLUNKWEB_URL_PREFIX}}/static/build/simplexml/index.js"></script>
+
+<script type="text/x-underscore-tmpl" id="services-template" style="display:none">
+    <table id="a-session-table" class="table table-chrome table-striped not-wrapped-results  table-drilldown table-drilldown-cell">
+        <thead class="shared-resultstable-resultstableheader">
+            <tr class="">
+                <th class="sorts" data-sort-key="Name">Service</th>
+                <th class="sorts" data-sort-key="Enabled">Enabled</th>
+            </tr>
+        </thead>
+        <tbody>
+            <%
+            var temp1 =results[0]['_raw'];
+            temp = JSON.parse(temp1);
+            for(var i=0;i < temp['services'].length;i++) {
+                if(i%2==0){
+                            %>
+                            <tr class="shared-resultstable-resultstablerow odd">
+                        <% } 
+                else { %>
+                            <tr class="shared-resultstable-resultstablerow even">
+                    <% } %>
+                <td><%= temp["services"][i]["name"] %></td>
+                <%
+                if(temp["services"][i]["enabled"] == true){
+                    %>
+                        <td class="icon"><center><i class="icon-check-circle" title="Enabled"></i></center></td>
+                    <% 
+                    }
+                else { %>
+                        <td class="icon"><center><i class="icon-alert-circle" title="Disabled"></i></center></td>
+                    <% } %>
+                </tr>
+            <%
+                }
+            %>
+        </tbody>
+    </table>
+</script>
+
+<script type="text/x-underscore-tmpl" id="failed-neutron-agents-template" style="display:none">
+<%
+    failed_agents_count = 0
+    running_agents_count = 0
+    var temp1  = results[0]['_raw'];
+    temp = JSON.parse(temp1);
+    for(var i=0;i < temp['agents'].length;i++) {
+        if(temp["agents"][i]["alive"] == true){
+            running_agents_count = running_agents_count + 1
+        }
+        else{
+            failed_agents_count = failed_agents_count + 1
+        }
+
+    } 
+    if(failed_agents_count > 0) {
+        %>
+        <table id="failed-agents-table" class="table table-chrome table-striped not-wrapped-results  table-drilldown table-drilldown-cell">
+            <thead class="shared-resultstable-resultstableheader">
+                <tr>
+                    <th class="sorts" data-sort-key="Host">Host</th>
+                </tr>
+            </thead>
+            <tbody>
+        <%
+        for(var i=0,j=0;i < temp['agents'].length;i++,j++) {
+            if(temp["agents"][i]["alive"] != true){
+                if(j%2!=0){
+                            %>
+                            <tr class="shared-resultstable-resultstablerow odd">
+                        <%} 
+                else { %>
+                        <tr class="shared-resultstable-resultstablerow even">
+                    <%}%>
+                <td><font color=red><%= temp["agents"][i]["host"] %></font></td>
+                </tr>
+                <% }
+        } %>
+        </tbody>
+        </table>
+        <% } 
+        else { %>
+            <span><h4><font color="#00B932"><center>
+            All neutron agents are running<center><font></h4>
+            </span>
+        <% } %>
+</script>
+
+<script type="text/x-underscore-tmpl" id="failed-services-template" style="display:none">  
+    <table id="report" class="table table-chrome table-striped not-wrapped-results  table-drilldown table-drilldown-cell">
+    <thead class="shared-resultstable-resultstableheader">
+        <tr class="">
+             <th>Node</th>
+             <th>Failed Services Count</th>
+             <th>Running Services Count</th>
+             <th></th>
+        </tr>
+   </thead>
+   <tbody>          
+    <%
+    failed_flag = 0;
+    var nodes = new Array();
+    function uniq(a) {
+        return a.sort().filter(function(item, pos, ary) {
+        return !pos || item != ary[pos - 1];
+        })
+    }
+    for(var i=0; i < results.length; i++) {
+        var line = results[i];
+        nodes[i] = line['node'];
+    }
+    nodes = uniq(nodes);
+    for(var i=0;i<nodes.length;i++)
+    {
+        failed_services_count = 0;
+        running_services_count = 0;
+        current_node = '';
+        list_of_failed_services = "";
+        for(var j=0;j<results.length;j++)
+        {   
+            current_node=nodes[i];
+            var line=results[j];
+            node = line["node"];
+            service_name = line["service_name"];
+            service_status = line["service_status"];
+            if(node == nodes[i] && service_status == 'stopped'){ 
+                failed_services_count = failed_services_count + 1;
+                list_of_failed_services = list_of_failed_services+service_name+","
+            }
+            else if(node == nodes[i] && service_status == 'running'){
+                running_services_count = running_services_count + 1;
+            }
+        } 
+        
+        %>
+        <tr class="shared-resultstable-resultstablerow even">
+            <td><%= current_node %></td>
+            <td><%= failed_services_count %></td>
+            <td><%= running_services_count %></td>
+            <td><div class="arrow"></div></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <h4>Failed Services</h4>
+                <ul>
+                <% var service_list = list_of_failed_services.split(',');
+                    for(k=0;k<service_list.length;k++){
+                %>
+                        <li><%= service_list[k] %></li>
+                <% } %>
+                </ul>   
+            </td>
+        </tr>
+    <% } %>
+    </tbody>
+    </table>
+</script>
+
+<script type="text/x-underscore-tmpl" id="failed-compute-template" style="display:none">
+    <%
+    failed_hypervisor_count = 0
+    running_hypervisor_count = 0
+    var temp1  = results[0]['_raw'];
+    temp = JSON.parse(temp1);
+    for(var i=0;i < temp['hypervisors'].length;i++) {
+        if(temp["hypervisors"][i]["state"] == 'up'){
+            running_hypervisor_count = running_hypervisor_count + 1
+        }
+        else{
+            failed_hypervisor_count = failed_hypervisor_count + 1
+        }
+
+    } 
+    if(failed_hypervisor_count > 0) {
+        %>
+        <table id="failed-hypervisor-table" class="table table-chrome table-striped not-wrapped-results  table-drilldown table-drilldown-cell">
+            <thead class="shared-resultstable-resultstableheader">
+                <tr>
+                    <th class="sorts" data-sort-key="Hypervisor">Hypervisor</th>
+                </tr>
+            </thead>
+            <tbody>
+        <%
+        for(var i=0,j=0;i < temp['hypervisors'].length;i++,j++) {
+            if(temp["hypervisors"][i]["state"] != 'up'){
+                if(j%2!=0){
+                            %>
+                        <tr class="shared-resultstable-resultstablerow odd">
+                        <%} 
+                else { %>
+                        <tr class="shared-resultstable-resultstablerow even">
+                    <% } %>
+            <td><font color=red><%= temp["hypervisors"][i]["hypervisor_hostname"] %></font></td>
+            </tr>
+            <% }
+        } %>
+        </tbody>
+        </table>
+        <%
+    } 
+    else { %>
+        <span><h4><font color="#00B932"><center>
+        All hypervisors are running<center><font></h4>
+        </span>
+    <% } %>
+</script>
+
+<script type="text/x-underscore-tmpl" id="failed-routers-table-template" style="display:none">   
+ <%
+    failed_routers_count = 0
+    running_routers_count = 0
+    var temp1  = results[0]['_raw'];
+    temp = JSON.parse(temp1);
+    for(var i=0;i < temp['routers'].length;i++) {
+        if(temp["routers"][i]["status"] == 'ACTIVE'){
+            running_routers_count = running_routers_count + 1
+        }
+        else{
+            failed_routers_count = failed_routers_count + 1
+        }
+
+    } 
+    if(failed_routers_count > 0) {
+        %>
+        <table id="failed-routers-table" class="table table-chrome table-striped not-wrapped-results  table-drilldown table-drilldown-cell">
+            <thead class="shared-resultstable-resultstableheader">
+                <tr>
+                    <th class="sorts" data-sort-key="Router">Router</th>
+                </tr>
+            </thead>
+            <tbody>
+        <%
+        for(var i=0,j=0;i < temp['routers'].length;i++,j++) {
+            if(temp["routers"][i]["status"] != 'ACTIVE'){
+            if(j%2==0){
+                %>
+                <tr class="shared-resultstable-resultstablerow odd">
+            <% } 
+            else { %>
+                <tr class="shared-resultstable-resultstablerow even">
+            <% } %>
+            <td><font color=red><%= temp["routers"][i]["name"] %></font></td>
+            </tr>
+            <% }
+        } %>
+        </tbody>
+        </table>
+        <%
+    } 
+    else { %>
+        <span><h4><font color="#00B932"><center>
+        All routers are running<center><font></h4>
+        </span>
+    <% } %>
+</script>
+
+<script>
+    var deps = [
+    "splunkjs/ready!",
+    "splunkjs/mvc/searchmanager",
+    "splunkjs/mvc/chartview",
+    "splunkjs/mvc/tableview",
+    "underscore",
+    "splunkjs/mvc/dataview",
+    "splunkjs/mvc/singleview",
+    "splunkjs/mvc",
+    "splunkjs/mvc/utils",
+    "splunkjs/mvc/tokenutils",
+    "jquery"
+    ];
+    require(deps, function(mvc) {
+        var SearchManager = require("splunkjs/mvc/searchmanager");
+        var ChartView = require("splunkjs/mvc/chartview");
+        var TableView = require("splunkjs/mvc/tableview");
+        var DataView = require("splunkjs/mvc/dataview");
+        var SingleView = require("splunkjs/mvc/singleview");
+        var _ = require("underscore");
+
+        new ChartView({
+            id: "vm_state_pie_chart_view",
+            managerid: "vms_state_search_manager",
+            type: "pie",
+            height: 146,
+            el: $("#vm_state_pie_chart"),
+            "charting.fieldColors": "{Error:0xF15854,Running:0x60BD68,Shutoff:0xDECF3F}"
+        }).render();
+
+
+        new ChartView({
+            id: "volume_state_pie_chart_view",
+            managerid: "volume_state_search_manager",
+            type: "pie",
+            height: 146,
+            el: $("#volume_state_pie_chart"),
+            "charting.fieldColors": "{In-Use:0xDECF3F,Available:0x60BD68}"
+        }).render();
+
+        new SingleView({
+            id: "neutron_agents_stopped_view",
+            managerid: "neutron_agents_running_search_manager",
+            underLabel: "Neutron Agents Stopped",
+            classField: "stopped",
+            field: "failed_neutron_agents_count",
+            el: $("#neutron_agents_stopped_single_view")
+        }).render();
+
+        new SingleView({
+            id: "neutron_agents_running_view",
+            managerid: "neutron_agents_running_search_manager",
+            underLabel: "Neutron Agents Running",
+            classField: "running",
+            field: "running_neutron_agents_count",
+            el: $("#neutron_agents_running_single_view")
+        }).render();
+
+        new SingleView({
+            id: "networks_configured_view",
+            managerid: "networks_configured_search_manager",
+            underLabel: "Networks Available",
+            classField: "range",
+            field: "networks_count",
+            el: $("#networks_configured_single_view")
+        }).render();
+
+        new SingleView({
+            id: "routers_running_view",
+            managerid: "routers_running_search_manager",
+            underLabel: "Routers Running",
+            classField: "running",
+            field: "running_routers_count",
+            el: $("#routers_running_single_view")
+        }).render();
+
+        new SingleView({
+            id: "routers_stopped_view",
+            managerid: "routers_running_search_manager",
+            underLabel: "Routers Stopped",
+            classField: "stopped",
+            field: "stopped_routers_count",
+            el: $("#routers_stopped_single_view")
+        }).render();
+
+        new SingleView({
+            id: "hypervisors_down_view",
+            managerid: "hypervisors_down_search_manager",
+            underLabel: "Hypervisors Down",
+            classField: "down",
+            field: "down_hypervisors_count",
+            el: $("#hypervisors_down_single_view")
+        }).render();
+
+        new SingleView({
+            id: "hypervisors_up_view",
+            managerid: "hypervisors_down_search_manager",
+            underLabel: "Hypervisors Up",
+            classField: "up",
+            field: "up_hypervisors_count",
+            el: $("#hypervisors_up_single_view")
+        }).render();
+
+        new SingleView({
+            id: "flavors_available_view",
+            managerid: "flavors_available_search_manager",
+            underLabel: "Flavors Available",
+            classField: "range",
+            field: "available_flavor_count",
+            el: $("#flavors_available_single_view")
+        }).render();
+
+        new SingleView({
+            id: "images_available_view",
+            managerid: "images_available_search_manager",
+            underLabel: "Images Available",
+            classField: "range",
+            field: "available_images_count",
+            el: $("#images_available_single_view")
+        }).render();
+
+        node_load_view_table = new TableView({
+            id: "node_load_view",
+            managerid: "nodes_load_search_manager",
+            el: $("#node_load_table"),
+            pageSize: 5
+        }).render();
+
+        new DataView({
+            id: "failed_routers_table_view",
+            managerid: "failed_routers_search_manager",
+            el: $("#failed_routers_table"),
+            template: $("#failed-routers-table-template").html(),
+        }).render();
+
+        new DataView({
+            id: "failed_neutron_agents_view",
+            managerid: "neutron_agents_search_manager",
+            el: $("#failed_neutron_agents_table"),
+            template: $("#failed-neutron-agents-template").html(),
+        }).render();
+
+        new DataView({
+            id: "failed_computes_view",
+            managerid: "hypervisor_search_manager",
+            el: $("#failed_compute_node_table"),
+            template: $("#failed-compute-template").html(),
+        }).render();
+
+        new SingleView({
+            id: "failed_services_single_view",
+            managerid: "failed_services_search_manager",
+            el: $("#node_wise_failed_service_count_single_view"),
+            underLabel: "Failed Services",
+            classField: "range",
+            field: "count"
+        }).render();
+
+        new DataView({
+        id: "openstack_services_view",
+        managerid: "openstack_services_search_manager",
+        template: $('#services-template').html(),
+        el: $('#openstack_services_table')
+        }, {tokens: true}).render();
+
+        var CustomIconCellRenderer = TableView.BaseCellRenderer.extend({ 
+            canRender: function(cellData) {
+                return cellData.field === "Load";
+            },
+            
+            render: function($td, cellData) {
+                console.log("cellData: ");
+                console.log("cellData: ", cellData);
+                if(cellData.value > 0.5 && cellData.value <= 1.0){
+                    $td.addClass('data-bar-cell').html(_.template('<div class="data-bar-elevated"><%- text %><div class="data-bar" style="width:<%- percent %>%"></div></div>', {
+                    percent: Math.min(Math.max(parseFloat(cellData.value)*100, 0), 100),
+                    text: cellData.value
+                }));
+                }
+                if(cellData.value > 1.0){
+                    $td.addClass('data-bar-cell').html(_.template('<div class="data-bar-high"><%- text %><div class="data-bar" style="width:<%- percent %>%"></div></div>', {
+                    percent: Math.min(Math.max(parseFloat(cellData.value)*100, 0), 100),
+                    text: cellData.value
+                }));
+                }
+                if(cellData.value > 0.0 && cellData.value < 0.5){
+                    $td.addClass('data-bar-cell').html(_.template('<div class="data-bar-low"><%- text %><div class="data-bar" style="width:<%- percent %>%"></div></div>', {
+                    percent: Math.min(Math.max(parseFloat(cellData.value)*100, 0), 100),
+                    text: cellData.value
+                }));
+                }
+            }
+        });
+        var myCellRenderer = new CustomIconCellRenderer();
+        node_load_view_table.addCellRenderer(myCellRenderer); 
+        node_load_view_table.render();
+
+
+        
+      
+    });
+</script>
+{% endblock js %}

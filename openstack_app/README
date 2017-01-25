@@ -1,0 +1,42 @@
+OpenStack App for Splunk
+----------------------------------------
+	Author: Basant Kumar
+	Author: GSLAB
+	Version/Date: 2.0/2016-12-30
+	Has index-time operations: false
+	Supported Splunk Server: 6.5.0 or above
+
+Introduction
+------------
+Monitoring and managing an OpenStack cloud setup is a big challenge. The OpenStack App for Splunk can help by collecting run-time metrics from every node in the Openstack setup and giving you a comprehensive view of the current state of the setup. With this app, you will be able to:
+- Gain complete visibility into your OpenStack cloud,
+- Search across logs from the entire setup in real-time,
+- Troubleshoot and analyze your OpenStack cloud setup with rich, interactive views and more.
+
+Prerequisites/Deployment dependencies:
+----------------
+1. Python 2.7
+2. Modify $SPLUNK_HOME/etc/system/default/limits.conf, set max_searches_per_cpu = 6
+
+Installation
+------------
+1. Make sure that Splunk (6.5.0 or above) is running.
+2. Login to Splunk with Administrator credentials.
+3. Go to the Apps tab.
+4. Go to 'Browse more apps' page.
+5. Search for 'OpenStack App for Splunk'.
+6. Click on the 'Install' button.
+7. Stop the Splunk server by running $SPLUNK_HOME/bin/splunk stop.
+8. In $SPLUNK_HOME/etc/apps/openstack_app/default/inputs.conf, enable required inputs by setting disabled=0.
+9. Start the Splunk server again by running $SPLUNK_HOME/bin/splunk start.
+10. Install and configure OpenStack Add-on for Splunk using instructions given in the README file of the Add-on.
+11. Access the OpenStack App for Splunk from Apps list. If you are doing this for the first time, you will see a Setup page.
+12. On the Setup page, enter valid OpenStack credentials, OpenStack setup details and click on 'Save'.
+
+Usage
+-----
+The OpenStack App for Splunk fetches cloud setup information from OpenStack APIs. This includes information related to VMs, Images, Networks, Routers, Volumes, etc. In addition to this, with the OpenStack Add-on for Splunk, it shows the status of services, resouce usage and logs from all OpenStack nodes where the Add-on is installed.
+
+Support
+-------
+File bug reports, feature requests and questions using GitHub Issues 
