@@ -2,7 +2,7 @@
 
 Openstack App for Splunk
 
-Copyright (c) 2016, Great Software Laboratory Private Limited.
+Copyright (c) 2017, Great Software Laboratory Private Limited.
 
 Contributor: Vikas Sanap [vikas.sanap@gslab.com], Basant Kumar [basant.kumar@gslab.com]
 
