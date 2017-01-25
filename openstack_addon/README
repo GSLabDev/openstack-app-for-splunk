@@ -1,0 +1,32 @@
+Introduction
+------------
+The OpenStack Add-on for Splunk works with the OpenStack App for Splunk to provide deep visibility into your OpenStack setup. It collects logs and resource usage information from machines it is installed on. Install this add-on on machines which are running OpenStack services - the "nodes" of the Openstack setup.
+
+Prerequisites/Deployment dependencies:
+----------------
+1. Python 2.7
+
+Installation
+------------
+For each machine where you wish to install the Openstack Add-on:
+
+1. Ensure that the Splunk Forwarder is installed.
+2. Ensure that the Splunk Forwarder is not running. If it is running, shut it down by running $SPLUNK_HOME/bin/splunk stop.
+3. In $SPLUNK_HOME/etc/apps/openstack_addon/default/inputs.conf, enable required inputs by setting disabled=0.
+4. At the begining of inputs.conf there is a default stanza which includes openstack, node_type, node tags. Here, in 'openstack', specify your OpenStack Newton deployment type, e.g. Production, Testing, Development,Staging etc. In 'node_type', you need to specify type of the current node e.g. controller, cinder, compute, neutron, etc. In 'node', specify the name of that node e.g. compute_node_1, compute_ubuntu_node, compute_docker, etc. These tags are used by the Splunk server to uniquely identify each node.
+5. Start the Splunk Forwarder by running $SPLUNK_HOME/bin/splunk start.
+
+Usage
+-----
+The OpenStack Add-on collects service status and resource usage information from the machines it is installed on. This information is used by the OpenStack App for Splunk to show the status of this node in the OpenStack setup. To make the best use of this Add-on, make sure that you install OpenStack App for Splunk on your Splunk server.
+
+Support
+-------
+File bug reports, feature requests and questions using GitHub Issues 
+
+OpenStack Add-on for Splunk
+----------------------------------------
+	Author: Basant Kumar
+	Author: GSLAB
+	Version/Date: 2.0/2016-12-30
+	Has index-time operations: false
